@@ -73,7 +73,7 @@ func (mq *MQ) DeclareExchange(exchange ...*Exchange) error {
 				if err := exchange[i].declare(activeCh.ch); err != nil {
 					return err
 				}
-				mqCollect.queueMap[exchange[i].Name] = true
+				mqCollect.exchangeMap[exchange[i].Name] = true
 			}
 		}
 	}

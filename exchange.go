@@ -2,6 +2,7 @@ package go_rabbitmq
 
 import (
 	"github.com/streadway/amqp"
+	"log"
 )
 
 type exchangeType int8
@@ -56,6 +57,7 @@ func (e *Exchange) declare(ch *amqp.Channel) error {
 	//   |  args        | amqp.Table |  扩展参数                                                                      |
 	//   -----------------------------------------------------------------------------------------------------------
 
+	log.Printf("声明 Exchange: %s 类型: %s", e.Name, e.Kind.Name())
 	return ch.ExchangeDeclare(e.Name, e.Kind.Name(), true, false, false, false, e.arguments)
 }
 

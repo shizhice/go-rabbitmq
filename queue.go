@@ -2,6 +2,7 @@ package go_rabbitmq
 
 import (
 	"github.com/streadway/amqp"
+	"log"
 )
 
 // Queue 队列
@@ -48,8 +49,11 @@ func (q *Queue) declare(ch *amqp.Channel) error {
 	//   |              |            |     ④ x-dead-letter-routing-key 当 队列溢出、消息被拒或过期，重定向时替换Message的   |
 	//   |              |            |       RoutingKey                                                              |
 	//   ------------------------------------------------------------------------------------------------------------
+
+	log.Printf("声明 Queue: %s args: %v", q.Name, q.Arguments)
 	queue, err := ch.QueueDeclare(q.Name, true, false, false, false, q.Arguments)
 	if err == nil {
+		log.Printf("声明 BindingKey: %s queue: %s exchange: %s", q.Binding.BindingKey, q.Name, q.Binding.Exchange.Name)
 		err = ch.QueueBind(
 			queue.Name,
 			q.Binding.BindingKey,
