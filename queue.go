@@ -2,7 +2,7 @@ package go_rabbitmq
 
 import (
 	"github.com/streadway/amqp"
-	"log"
+	log "github.com/sirupsen/logrus"
 )
 
 // Queue 队列
@@ -50,10 +50,18 @@ func (q *Queue) declare(ch *amqp.Channel) error {
 	//   |              |            |       RoutingKey                                                              |
 	//   ------------------------------------------------------------------------------------------------------------
 
-	log.Printf("声明 Queue: %s args: %v", q.Name, q.Arguments)
+	log.WithFields(log.Fields{
+		"Name": q.Name,
+		"Args": q.Arguments,
+	}).Info("声明 Queue")
 	queue, err := ch.QueueDeclare(q.Name, true, false, false, false, q.Arguments)
 	if err == nil {
-		log.Printf("声明 BindingKey: %s queue: %s exchange: %s", q.Binding.BindingKey, q.Name, q.Binding.Exchange.Name)
+		log.WithFields(log.Fields{
+			"BindingKey": q.Binding.BindingKey,
+			"Queue": q.Name,
+			"Exchange": q.Binding.Exchange.Name,
+		}).Info("声明 BindingKey")
+
 		err = ch.QueueBind(
 			queue.Name,
 			q.Binding.BindingKey,

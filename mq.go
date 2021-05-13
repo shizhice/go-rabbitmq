@@ -1,8 +1,17 @@
 package go_rabbitmq
 
 import (
+	log "github.com/sirupsen/logrus"
 	"sync"
 )
+
+func init() {
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors: true,
+		FullTimestamp: true,
+		TimestampFormat: "2006-01-02 15:04:05",
+	})
+}
 
 var mqCollect = rabbitmqCollect{mqMap: make(map[address]*MQ), queueMap: make(map[string]bool), exchangeMap: make(map[string]bool)}
 
@@ -39,12 +48,6 @@ func newMQ(conf Config) (*MQ, error) {
 		return nil, err
 	}
 	mq := &MQ{conf: conf, pool: pool}
-
-	//if err := mq.DeclareExchange(commonDirectExchange, commonFanoutExchange, commonTopicExchange,
-	//	commonHeaderExchange); err != nil {
-	//	mq.Close()
-	//	return nil, err
-	//}
 
 	return mq, nil
 }

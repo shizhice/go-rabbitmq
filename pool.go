@@ -3,6 +3,7 @@ package go_rabbitmq
 import (
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 	"sync"
 	"time"
@@ -27,6 +28,10 @@ func CreatePool(addr address, connCap, chCap int) (*pool, error) {
 	if chCap == 0 {
 		chCap = 1
 	}
+	log.WithFields(log.Fields{
+		"ConnCap": connCap,
+		"ChCap": chCap,
+	}).Info("创建RabbitMQ连接池")
 	return (&pool{
 		addr: addr,
 		connCap: connCap,
