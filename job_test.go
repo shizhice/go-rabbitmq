@@ -9,8 +9,8 @@ var defaultConfig = &Config{
 	Username: "golang",
 	Password: "123456",
 	VirtualHost: "go_vhost",
-	//ConnCap: 2,
-	//ChCap: 5,
+	ConnCap: 8,
+	ChannelCapOfPreCoon: 4,
 }
 
 type OrderJob struct {
@@ -50,6 +50,7 @@ func TestDispatch(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	//time.Sleep(time.Second * 10)
 }
 
 func TestDispatchNotConfirm(t *testing.T) {

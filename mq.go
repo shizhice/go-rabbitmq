@@ -43,7 +43,7 @@ func Open(conf Config) (mq *MQ, err error) {
 }
 
 func newMQ(conf Config) (*MQ, error) {
-	pool, err := CreatePool(conf.addr, conf.ConnCap, conf.ChCap)
+	pool, err := CreatePool(conf.addr, conf.ConnCap, conf.ChannelCapOfPreCoon)
 	if err != nil {
 		return nil, err
 	}

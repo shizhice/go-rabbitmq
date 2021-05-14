@@ -12,7 +12,7 @@ func TestOpen(t *testing.T) {
 		Password: "123456",
 		VirtualHost: "go_vhost",
 		ConnCap: 2,
-		ChCap: 5,
+		ChannelCapOfPreCoon: 5,
 	})
 
 	if err != nil {

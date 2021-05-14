@@ -20,7 +20,7 @@ type Config struct {
 	Port int
 	VirtualHost string
 	ConnCap int
-	ChCap int
+	ChannelCapOfPreCoon int
 }
 
 func (c *Config) init() {
@@ -42,8 +42,8 @@ func (c *Config) init() {
 	if c.ConnCap == 0 {
 		c.ConnCap = 1
 	}
-	if c.ChCap == 0 {
-		c.ChCap = 1
+	if c.ChannelCapOfPreCoon == 0 {
+		c.ChannelCapOfPreCoon = 1
 	}
 
 	c.addr = address(fmt.Sprintf("amqp://%s:%s@%s:%d/%s", c.Username, c.Password, c.Host, c.Port, c.VirtualHost))

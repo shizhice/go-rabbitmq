@@ -11,6 +11,7 @@ type channel struct {
 	ch *amqp.Channel
 	createdAt time.Time
 	closed bool
+	closeChan chan *amqp.Error
 	notifyConfirmChan chan amqp.Confirmation
 	notifyReturnChan  chan amqp.Return
 	publishChan chan message
@@ -18,24 +19,26 @@ type channel struct {
 }
 
 func (c *channel) close() {
+	if c.closed {
+		return
+	}
 	defer c.ch.Close()
+	c.closed = true
 	c.quit <- true
 }
 
 func (c *channel) listen() {
 	var deliveryTag uint64 = 1
 	var deliveryMap = make(map[uint64]messageId)
+	c.quit = make(chan bool)
 	c.publishChan = make(chan message)
 	c.notifyConfirmChan = c.ch.NotifyPublish(make(chan amqp.Confirmation))
 	c.notifyReturnChan = c.ch.NotifyReturn(make(chan amqp.Return))
+	c.closeChan = c.ch.NotifyClose(make(chan *amqp.Error))
 
 	for {
 		select {
 		case <-c.quit:
-			c.closed = true
-			close(c.notifyConfirmChan)
-			close(c.notifyReturnChan)
-
 			return
 		case msg := <-c.publishChan:
 			deliveryMap[deliveryTag] = msg.Id
@@ -52,6 +55,13 @@ func (c *channel) listen() {
 			}
 		case ret := <-c.notifyReturnChan:
 			c.notifyReturn(ret)
+		case err := <-c.closeChan:
+			if !c.closed {
+				c.closed = true
+				log.WithFields(log.Fields{
+					"error": err,
+				}).Info("channel 关闭")
+			}
 		}
 	}
 }
@@ -63,8 +73,6 @@ func (c *channel) notifyReturn(ret amqp.Return) {
 		log.WithFields(log.Fields{
 			"MessageID": msg.Id,
 		}).Warn("消息没有正确入列")
-	} else {
-		log.Info("消息已入列")
 	}
 }
 
