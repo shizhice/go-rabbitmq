@@ -53,8 +53,6 @@ func TestDispatchDelay(t *testing.T) {
 	})
 	if err != nil {
 		t.Error(err)
-	} else {
-		t.Log("push done")
 	}
 }
 

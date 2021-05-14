@@ -26,7 +26,7 @@ func Dispatch(job IJob, data Payload) error {
 // Dispatch message to queue At time
 func makeMessage(data Payload, job IJob) message {
 	return message{
-		Id: uuid.New().String(),
+		Id: messageId(uuid.New().String()),
 		Address: job.Config().getAddr().md5(),
 		Queue: job.Queue().Name,
 		Payload: data,
@@ -59,31 +59,12 @@ func publish(job IJob, msg message, d TTL) error {
 		return err
 	}
 
-	return publishMessage(mq, job, msg, d)
-}
-
-func publishMessage(mq *MQ, job IJob, msg message, d TTL) error {
-	exchangeName := commonTopicExchange.Name
-	if job.Exchange() != nil {
-		exchangeName = job.Exchange().Name
-	}
-
-	table := amqp.Publishing{
-		ContentType: "application/json",
-		Body:        msg.Marshal(),
-	}
-
-	// 设置message过期时间
-	if d >= MixTTL {
-		table.Expiration =  d.String()
-	}
-	channel, err := mq.pool.get()
-	if err != nil {
-		return err
-	}
-	defer mq.pool.release(channel)
-
-	return channel.ch.Publish(exchangeName, job.RoutingKey(), true, false, table)
+	return (&postman{
+		mq: mq,
+		job: job,
+		msg: msg,
+		ttl: d,
+	}).send()
 }
 
 func declareJob(job IJob, mq *MQ) error {

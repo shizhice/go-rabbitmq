@@ -15,8 +15,10 @@ const (
 	messageDead
 )
 
+type messageId string
+
 type message struct {
-	Id string `json:"id"`
+	Id messageId `json:"id"`
 	Address addressHash `json:"address"`
 	ExchangeName string `json:"exchange_name"`
 	Queue string `json:"queue"`

@@ -25,7 +25,7 @@ func CreatePool(addr address, connCap, chCap int) (*pool, error) {
 	if connCap == 0 {
 		connCap = 1
 	}
-	if chCap == 0 {
+	if chCap <= 0 {
 		chCap = 1
 	}
 	log.WithFields(log.Fields{
@@ -127,6 +127,7 @@ func (p *pool) createChannel(conn *connection) (err error) {
 			ch: ch,
 			createdAt: time.Now(),
 		}
+		go curChannel.listen()
 		conn.channelList = append(conn.channelList, curChannel)
 		p.readyChannel <- curChannel
 	}
