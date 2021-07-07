@@ -44,14 +44,19 @@ func (c *channel) listen() {
 			deliveryMap[deliveryTag] = msg.Id
 			deliveryTag++
 		case confirmed := <-c.notifyConfirmChan:
-			if confirmed.Ack {
-				if msgId, ok := deliveryMap[confirmed.DeliveryTag]; ok {
+			if msgId, ok := deliveryMap[confirmed.DeliveryTag]; ok {
+				if confirmed.Ack {
 					log.WithFields(log.Fields{
 						"MsgId": msgId,
 						"DeliveryTag": confirmed.DeliveryTag,
 					}).Info("消息确认送达")
-					delete(deliveryMap, confirmed.DeliveryTag)
+				} else {
+					log.WithFields(log.Fields{
+						"MsgId": msgId,
+						"DeliveryTag": confirmed.DeliveryTag,
+					}).Warn("消息被拒收")
 				}
+				delete(deliveryMap, confirmed.DeliveryTag)
 			}
 		case ret := <-c.notifyReturnChan:
 			c.notifyReturn(ret)

@@ -10,6 +10,7 @@ type Queue struct {
 	Name string
 	Binding QueueBind
 	Arguments amqp.Table
+	// todo: queue 固定长度 超出情况
 }
 
 func (q *Queue) isDelayQueue() bool {
@@ -80,7 +81,6 @@ type QueueBind struct {
 	BindingKey string
 	Args amqp.Table
 }
-// todo: 不设置 BindingKey message会路由到队列吗？
 
 var deadLetterQueue = &Queue{
 	Name: deadLetterQueueName,

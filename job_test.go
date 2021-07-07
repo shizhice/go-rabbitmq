@@ -1,6 +1,7 @@
 package go_rabbitmq
 
 import (
+	"github.com/streadway/amqp"
 	"testing"
 	"time"
 )
@@ -9,8 +10,8 @@ var defaultConfig = &Config{
 	Username: "golang",
 	Password: "123456",
 	VirtualHost: "go_vhost",
-	ConnCap: 8,
-	ChannelCapOfPreCoon: 4,
+	ConnCap: 1,
+	ChannelCapOfPreCoon: 1,
 }
 
 type OrderJob struct {
@@ -131,4 +132,64 @@ func TestConcurrentNotifyReturn(t *testing.T) {
 		}()
 	}
 	time.Sleep(time.Second * 5)
+}
+
+type CapacityJob struct {
+
+}
+
+func (c CapacityJob) Config() *Config {
+	return defaultConfig
+}
+
+func (c CapacityJob) Queue() *Queue {
+	return &Queue{
+		Name: "CapacityQueue",
+		Binding: QueueBind{
+			BindingKey: "capacityQueue",
+		},
+		Arguments: amqp.Table{
+			"x-max-length": 10,
+			"x-overflow": "drop-head",
+			//* drop-head（删除queue头部的消息）、
+			//* reject-publish-dlx（拒绝发送消息到死信交换器）
+			//* 类型为quorum 的queue只支持drop-head;
+		},
+	}
+}
+
+func (c CapacityJob) Exchange() *Exchange {
+	return nil
+}
+
+func (c CapacityJob) Handle(payload Payload) {
+	panic("implement me")
+}
+
+func (c CapacityJob) RoutingKey() string {
+	return c.Queue().Binding.BindingKey
+}
+
+func TestDispatchWithCapacity(t *testing.T) {
+	err := Dispatch(CapacityJob{}, Payload{
+		"id": 10001 + num,
+	})
+
+	if err != nil {
+		t.Error(err)
+	} else {
+		t.Log("push done")
+	}
+
+}
+
+var num = 0
+func TestLotsDispatchWithCapacity(t *testing.T) {
+	for i := 0; i < 20; i++ {
+		<-time.After(time.Millisecond * 1000)
+		TestDispatchWithCapacity(t)
+		num++
+	}
+
+	time.Sleep(time.Second * 2)
 }

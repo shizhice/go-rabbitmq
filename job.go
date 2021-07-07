@@ -44,16 +44,6 @@ func publish(job IJob, msg message, d TTL) error {
 		return err
 	}
 
-	activeQueue := job.Queue()
-	if _, ok := job.(IDelayJob); ok {
-		if activeQueue.Arguments == nil {
-			activeQueue.Arguments = make(amqp.Table)
-		}
-		if job.Exchange() != nil {
-			activeQueue.Arguments["x-dead-letter-exchange"] = job.Exchange()
-		}
-	}
-
 	// 声明队列
 	if err := declareJob(job, mq); err != nil {
 		return err
